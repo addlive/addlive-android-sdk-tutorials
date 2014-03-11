@@ -77,9 +77,9 @@ This tutorial provides a sample implementation of one of the many uses you can
 give to the speechActivity feature.
 
 The sample application renders only the video of the speaking person and we
-achieve this making use of the onSpeechActivity listener and it's parameters.
-It will also only allow to receive video from the speaking user by making use
-of setAllowedSenders.
+achieve this by using the onSpeechActivity listener and it's parameters.
+It will also only allow to receive video from the speaking user by setting only
+his userId using setAllowedSenders.
 
 ## License
 
