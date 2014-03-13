@@ -28,11 +28,11 @@ public class Tutorial3 extends Activity {
 	*===========================================================================
 	*/
 
-	private static final long ADL_APP_ID = 486; // TODO set your app ID here.
-	private static final String ADL_API_KEY = "ADL_M0QLrBEfSMR4w3cb2kwZtKgPumKGkbozk2k4SaHgqaOabexm8OmZ5uM"; // TODO set you API key here.
-	private static final String ADL_SCOPE_ID = "MOmJ"; // TODO set you scope ID here.
+	private static final long ADL_APP_ID = 1; // TODO set your app ID here.
+	private static final String ADL_API_KEY = "AddLiveSuperSecret"; // TODO set you API key here.
+	private static final String ADL_SCOPE_ID = "ADL_iOS"; // TODO set you scope ID here.
 
-	private static final String LOG_TAG = "AddLiveDemo";
+	private static final String LOG_TAG = "AddLiveTutorial";
 
 	/**
 	*===========================================================================

@@ -19,7 +19,7 @@ public class Tutorial1 extends Activity {
 	*/
 
 	private static final long ADL_APP_ID = 1; // TODO set your app ID here.
-	private static final String LOG_TAG = "AddLiveDemo";
+	private static final String LOG_TAG = "AddLiveTutorial";
 	  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
