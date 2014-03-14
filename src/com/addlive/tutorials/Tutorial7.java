@@ -37,7 +37,7 @@ public class Tutorial7 extends Activity {
 	private static final String ADL_API_KEY = "AddLiveSuperSecret"; // TODO set you API key here.
 	private static final String ADL_SCOPE_ID = "ADL_iOS"; // TODO set you scope ID here.
 
-	private static final String LOG_TAG = "AddLiveDemo";
+	private static final String LOG_TAG = "AddLiveTutorial";
 
 	/**
 	* ===========================================================================
@@ -48,12 +48,12 @@ public class Tutorial7 extends Activity {
 	class User {
 		long userId; 
 	    String videoSinkId = "";
-	    int speechActivity;
+	    int activity;
 
-	    User(long userId, String videoSinkId, int speechActivity) {
+	    User(long userId, String videoSinkId, int activity) {
 	    	this.userId = userId;
 	    	this.videoSinkId = videoSinkId;
-	    	this.speechActivity = speechActivity;
+	    	this.activity = activity;
 	    }
 	}
 
@@ -90,8 +90,8 @@ public class Tutorial7 extends Activity {
     // Remote VideoView max height.
     float _videoMaxHeight;
     
-    // Flag to identify when connected.
-    boolean _connected;
+    // Timer to check and set the speaking feeder
+    int _checkTimer;
 	  
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -185,9 +185,6 @@ public class Tutorial7 extends Activity {
 
 	        	    Log.d(LOG_TAG, "Successfully connected to the scope");
 	        	    
-	        	    // Setting variable.
-	        	    _connected = true;
-	        	    
 	        	    // Removing the message when connecting.
 	        	    TextView status = (TextView) findViewById(R.id.status);
 	        	    status.setText("");
@@ -258,9 +255,6 @@ public class Tutorial7 extends Activity {
 	        new UIThreadResponder<Void>(this) {
 	          	@Override
 	          	protected void handleResult(Void result) {
-
-	        	    // Setting variable.
-	        	    _connected = false;
 	        	    
 	        	    // Removing the message when disconnecting.
 	        	    TextView status = (TextView) findViewById(R.id.status);
@@ -494,6 +488,10 @@ public class Tutorial7 extends Activity {
 		        	@Override
 		        	public void run() {
 				      	Log.d(LOG_TAG, "onConnectionLost Listener triggered");
+				      	
+		          	    // Clearing the remote VideoView.
+		          	    _view.stop();
+		          	    _view.setSinkId("");
 		        	}
 		        });
 		  	}
@@ -522,12 +520,21 @@ public class Tutorial7 extends Activity {
 		        	public void run() {
 		        		
 		        		// Loop through all the activity list
-		        		for (SpeechActivityEvent.ActivityInfo ev : e.getSpeechActivity()) {
-		        			if(ev.getUserId() != -1){
-		        				User updateUser = userMap.get(ev.getUserId());
-		        				updateUser.speechActivity += ev.getActivity();
+		        		for (long userActive : e.getActiveSpeakers()) {
+		        			if(userActive != -1){
+		        				User updateUser = userMap.get(userActive);
+		        				updateUser.activity++;
 		        			}
 		        		}
+		        	    
+		        	    _checkTimer++;
+		        	    
+		        	    // If there is some activity.
+		        	    if(_checkTimer >= 15 && !userMap.isEmpty())
+		        	    {
+					      	Log.d(LOG_TAG, "checkActivity");
+		        	    	checkActivity();
+		        	    }
 		        	}
 		        });
 		  	}
@@ -543,26 +550,34 @@ public class Tutorial7 extends Activity {
 		        runOnUiThread(new Runnable() {
 		        	@Override
 		        	public void run() {
-		        		if (e.isVideoPublished() || e.isScreenPublished()) {
-		    		
-		    				// Getting the correct sinkId for each case
-		    				if(e.isScreenPublished()){
-		    					
-			    				// Setting the new screenSink value.
-			    			   	_remoteSinkId = e.getScreenSinkId();
-				        		
-				        		// Update record
-				        	    User remoteUser = userMap.get(e.getUserId());
-				        	    remoteUser.videoSinkId = _remoteSinkId;
-		    				} else{
-		    					
-			    				// Setting the new remoteVideoSink value.
-			    			   	_remoteSinkId = e.getVideoSinkId();
-		    				}
-		        		} else {
+		        		
+		        		if(e.getMediaType() == MediaType.VIDEO) {
+
+		    				// Setting the new remoteVideoSink value.
+		    			   	_remoteSinkId = e.getVideoSinkId();
+		    			   	
+			        		// Update record
+			        	    User remoteUser = userMap.get(e.getUserId());
+			        	    remoteUser.videoSinkId = _remoteSinkId;
 		        			
-		        			// Removing the remoteVideoSink to the VideoView
-		        			_remoteSinkId = "";
+			        	    // If it's the current user feeding video.
+			        	    if(e.getUserId() == _remoteUserId) {
+			        	    	
+			        			if(e.isVideoPublished()) {
+
+			        			   	// Stopping the previous VideoView.
+			        			    _view.stop();
+
+			        				// Setting the remoteVideoSink to the VideoView
+			        			    _view.setSinkId(_remoteSinkId);
+			        			    _view.start();
+			        			} else {
+			        				
+			        				// Stopping the feeding.
+			        			    _view.stop(); 
+			        			    _view.setSinkId(_remoteSinkId);
+			        			}
+			        	    }
 		        		}
 		        	}
 		        });
@@ -581,19 +596,15 @@ public class Tutorial7 extends Activity {
 		    		public void run() {
 		    			Log.d(LOG_TAG, "onAdlUserEvent: " + e.toString());
 		    			
-		    			// If it's a new user connecting.
+		    			// If nobody is feeding.
 		    		    if (e.isConnected() && _remoteSinkId.equals("")) {
 		    				Log.i(LOG_TAG, "New user connected: " + 
 		    						e.getUserId());
-		    		
-		    				// Getting the correct sinkId for each case
-		    				if(e.isScreenPublished()){
+
+		    	            // Getting the videoId.
+		    				if(e.isVideoPublished()){
 		    					
 			    				// Setting the new screenSink value.
-			    			   	_remoteSinkId = e.getScreenSinkId();
-		    				} else{
-		    					
-			    				// Setting the new remoteVideoSink value.
 			    			   	_remoteSinkId = e.getVideoSinkId();
 		    				}
 		    				
@@ -611,29 +622,27 @@ public class Tutorial7 extends Activity {
 		    			    
 		    		    } else if(e.isConnected()) {
 		    		    	
-		    		    	// Getting the correct sinkId for each case
-		    				if(e.isScreenPublished()){
-		    					
-			    				// Saving the videoSinkId with it's corresponding
-			    				// userId.
-			    			    userMap.put(e.getUserId(), new User(
-			    			    						e.getUserId(), 
-			    			    						e.getScreenSinkId(), 
-			    			    						0));
-		    				} else{
-			    				
-			    				// Saving the videoSinkId with it's corresponding
-			    				// userId.
-			    			    userMap.put(e.getUserId(), new User(
-			    			    						e.getUserId(), 
-			    			    						e.getVideoSinkId(), 
-			    			    						0));
-		    				}
+		    				// Saving the videoSinkId with it's corresponding
+		    				// userId.
+		    			    userMap.put(e.getUserId(), new User(
+		    			    						e.getUserId(), 
+		    			    						e.getVideoSinkId(), 
+		    			    						0));
 		    		    	
 		    		    } else {
 		    		    	
 		    		    	// Removing the userId record.
 		    		        userMap.remove(e.getUserId());
+		    		        
+		    		        // If the user disconnected was the one feeding.
+		    		        if(e.getUserId() == _remoteUserId) {
+		    		        	
+		    		        	_remoteSinkId = "";
+		    		        	
+		        				// Stopping the feeding.
+		        			    _view.stop(); 
+		        			    _view.setSinkId(_remoteSinkId);
+		    		        }
 		    		    }
 		    		}
 		    	});
@@ -682,57 +691,50 @@ public class Tutorial7 extends Activity {
 	*/
 	
 	private void checkActivity() {
-		new Thread(new Runnable() {
-		    public void run() {
-			    while (_connected) {
-			    	try {
-			            Thread.sleep(2000);
-			        } catch(InterruptedException e) {}
-			        
-			        // Checking activity.
-			        boolean activity = false;
-		        	for (User user : userMap.values()) {
-				    	if(user.speechActivity > 0){
-				    		activity = true;
-				    	}
-		  			}
-		        	
-			        // If there is some activity.
-			        if(activity)
-			        {
-			            // Getting the max activity during those 2 seconds.
-			        	int max = 0;
-			        	long userId = 0;
-			        	for (User user : userMap.values()) {
-			        		if(user.speechActivity > max){
-			        			max = user.speechActivity;
-			        			userId = user.userId;
-			        		}
-		      			}
 
-			            // If it's a different user as the one feeding video right now.
-			            if(userId != _remoteUserId && max > 0)
-			            {
-			                // Get his userId.
-			            	_remoteUserId = userId;
-			                
-			                // Get his sinkerId.
-			        	    User remoteUser = userMap.get(userId);
-			        	    _remoteSinkId = remoteUser.videoSinkId;
-			                
-			                // Change video feed calling the method in the main thread.
-		                    updateAllowedSenders();
-		                    startVideoWithTheCurrentSpeaker();
-			            }
+	    // Restart the timer.
+		_checkTimer = 0;
+        
+        // Checking activity.
+        boolean activity = false;
+    	for (User user : userMap.values()) {
+	    	if(user.activity > 0){
+	    		activity = true;
+	    	}
+		}
+    	
+        // If there is some activity.
+        if(activity) {
+        	
+            // Getting the max activity during those 2 seconds.
+        	int max = 0;
+        	long userId = 0;
+        	for (User user : userMap.values()) {
+        		if(user.activity > max){
+        			max = user.activity;
+        			userId = user.userId;
+        		}
+  			}
 
-			         	// Clearing the speech activity record.
-			        	for (User user : userMap.values()) {
-		    		    	user.speechActivity = 0;
-		      			}
-			        }
-			    }
-		    }
-		}).start();
+            // If it's a different user as the one feeding video right now.
+            if(userId != _remoteUserId && max > 0) {
+                // Get his userId.
+            	_remoteUserId = userId;
+                
+                // Get his sinkerId.
+        	    User remoteUser = userMap.get(userId);
+        	    _remoteSinkId = remoteUser.videoSinkId;
+                
+                // Change video feed calling the method in the main thread.
+                updateAllowedSenders();
+                startVideoWithTheCurrentSpeaker();
+            }
+
+         	// Clearing the speech activity record.
+        	for (User user : userMap.values()) {
+		    	user.activity = 0;
+  			}
+        }
 	}
 
 	// Generates the ConnectionDescriptor (authentication + video description)

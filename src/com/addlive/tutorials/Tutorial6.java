@@ -35,7 +35,7 @@ public class Tutorial6 extends Activity {
 	private static final String ADL_API_KEY = "AddLiveSuperSecret"; // TODO set you API key here.
 	private static final String ADL_SCOPE_ID = "ADL_iOS"; // TODO set you scope ID here.
 
-	private static final String LOG_TAG = "AddLiveDemo";
+	private static final String LOG_TAG = "AddLiveTutorial";
 
 	/**
 	*===========================================================================
@@ -46,8 +46,20 @@ public class Tutorial6 extends Activity {
 	// Local userId.
 	private long _userId;
 	
+	// Current remote sink id.
+	private String _currentRemoteSinkId;
+	
 	// Remote videoSinkId.
-	private String _remoteSinkId;
+	private String _remoteVideoSinkId;
+	
+	// Remote screenSinkId.
+	private String _remoteScreenSinkId;
+	
+	// Video or screen flag
+	boolean _videoFeed = false;
+	
+	// Toggle button
+	Button _toggle;
 	
 	// Remote VideoView object.
     com.addlive.view.VideoView _view;
@@ -90,6 +102,9 @@ public class Tutorial6 extends Activity {
 	    
 	    // Setting the reference to VideoView object.
 	    _view = (com.addlive.view.VideoView) findViewById(R.id.remote_video);
+	    
+	    // Setting the reference to button object.
+	    _toggle = (Button) findViewById(R.id.toggle);
 		
 	    // Setting view's listeners.
 	    initializeActions();
@@ -126,6 +141,18 @@ public class Tutorial6 extends Activity {
 					
 					// Calling method to handle the disconnection.
 		        	onDisconnect();
+		    	}
+		 	}
+		);
+		
+		// Setting the click listener for the toggle video/screen button.
+		findViewById(R.id.toggle).setOnClickListener(
+			new View.OnClickListener() {
+				@Override
+		      	public void onClick(View view) {
+
+					// Calling method to handle the toggle.
+					onToggle();
 		    	}
 		 	}
 		);
@@ -235,6 +262,9 @@ public class Tutorial6 extends Activity {
 	        	    // Hiding the disconnect button.
 	          	    Button disconnect = (Button) findViewById(R.id.disconnect);
 	          	    disconnect.setVisibility(View.GONE);
+	          	    
+	          	    // Hiding toggle button.
+		            _toggle.setVisibility(View.INVISIBLE);
 
 	          	    // Clearing the remote VideoView.
 	          	    _view.stop();
@@ -264,6 +294,21 @@ public class Tutorial6 extends Activity {
 		 * streaming server.
 		 */
 	    ADL.getService().disconnect(disconnectResponder, ADL_SCOPE_ID);
+	}
+
+	//==========================================================================
+
+	private void onToggle() {
+		
+	    if(!_videoFeed) {
+	    	
+	    	// Toggle feed from screen to video.
+	    	onRemoteStoppedScreen();
+	    } else {
+	    	
+	    	// Toggle feed from video to screen.
+	    	onRemoteStoppedVideo();
+	    }
 	}
 
 	/**
@@ -415,10 +460,10 @@ public class Tutorial6 extends Activity {
 		        		Log.v(LOG_TAG, "videoFrameSizeChanged: " + e.getSinkId()
 		        				+ " -> " + e.getWidth() + "x" + e.getHeight());
 		        		
-		        		// if it's not the local renderer
-		        		if(!e.getSinkId().equals("AddLiveRenderer1")){
+		        		// If its the current sink feeding.
+		        		if(e.getSinkId().equals(_currentRemoteSinkId)){
 		        			
-			        		// Getting the new values to scale the VideoView
+			        		// Getting the new values to scale the VideoView.
 			        		fitDimensions(e.getWidth(), e.getHeight(), 
 			        						_videoMaxWidth, _videoMaxHeight);
 			        		
@@ -449,6 +494,10 @@ public class Tutorial6 extends Activity {
 		        	@Override
 		        	public void run() {
 				      	Log.d(LOG_TAG, "onConnectionLost Listener triggered");
+	        	    	
+	        			// Removing the remoteVideoSink to the VideoView
+	    		    	_view.stop();
+	    			    _view.setSinkId("");
 		        	}
 		        });
 		  	}
@@ -497,29 +546,68 @@ public class Tutorial6 extends Activity {
 		        runOnUiThread(new Runnable() {
 		        	@Override
 		        	public void run() {
-		        		if (e.isVideoPublished() || e.isScreenPublished()) {
-		    		
-		    				// Getting the correct sinkId for each case
-		    				if(e.isScreenPublished()){
-		    					
-			    				// Setting the new screenSink value.
-			    			   	_remoteSinkId = e.getScreenSinkId();
-		    				} else{
-		    					
-			    				// Setting the new remoteVideoSink value.
-			    			   	_remoteSinkId = e.getVideoSinkId();
-		    				}
-			    			
-		        			// Setting the remoteVideoSink to the VideoView
-		        			_view.stop();
-		        			_view.setSinkId(_remoteSinkId);
-		    			    _view.start();
-		        		} else {
-		        			
-		        			// Removing the remoteVideoSink to the VideoView
-		        			_view.stop();
+		        	    if(e.getMediaType() == MediaType.VIDEO) {
+		        	    	
+		        	        // Updating the Id.
+		        	        _remoteVideoSinkId = e.getVideoSinkId();
+		        	        
+		        	        // If I was feeding video but now it's disable and 
+		        	        // I have available screen.
+		        	        if(_videoFeed && !e.isVideoPublished() && 
+		        	        							e.isScreenPublished()) {
+		        	        	
+		        		    	// Toggle feed from video to screen.
+		        	        	onRemoteStoppedVideo();
+		        		    	
+		        	        } else if(e.isVideoPublished()) {
+		        	        	
+		        	            // Updating current Id.
+		        	            _currentRemoteSinkId = _remoteVideoSinkId;
+		        	            
+		        	        	// Setting the remoteVideoSink to the VideoView.
+			        			_view.stop();
+			        			_view.setSinkId(_currentRemoteSinkId);
+			    			    _view.start();
+		        	        }
+		        	    } else if(e.getMediaType() == MediaType.SCREEN) {
+		        	    	
+		        	        // Updating the Id.
+		        	        _remoteScreenSinkId = e.getScreenSinkId();
+		        	        
+		        	        // If I was feeding screen but now it's disable and 
+		        	        // I have available video.
+		        	        if(!_videoFeed && !e.isScreenPublished() && 
+		        	        							e.isVideoPublished()) {
+		        	        	
+		        	        	// Toggle feed from screen to video.
+		        	        	onRemoteStoppedScreen();
+		        	        	
+		        	        } else if(e.isScreenPublished()) {
+		        	        	
+		        	            // Updating current Id.
+		        	            _currentRemoteSinkId = _remoteScreenSinkId;
+		        	            
+		        	        	// Setting the remoteVideoSink to the VideoView.
+			        			_view.stop();
+			        			_view.setSinkId(_currentRemoteSinkId);
+			    			    _view.start();
+		        	        }
+		        	    }
+		        	    
+		        	    // Stop the feeding if there's none
+		        	    if(!e.isScreenPublished() && !e.isVideoPublished()) {
+		        	    	
+		        			// Removing the remoteVideoSink to the VideoView.
+		    		    	_view.stop();
 		    			    _view.setSinkId("");
-		        		}
+		        	    }
+		        	    
+		        	    // Setting the toggle button visibility.
+		        	    if(e.isScreenPublished() && e.isVideoPublished()) {
+	    		            _toggle.setVisibility(View.VISIBLE);
+		        	    } else if(e.isScreenPublished() || e.isVideoPublished()) {
+	    		            _toggle.setVisibility(View.INVISIBLE);
+		        	    }
 		        	}
 		        });
 			}
@@ -542,26 +630,35 @@ public class Tutorial6 extends Activity {
 		    				Log.i(LOG_TAG, "New user connected: " + 
 		    						e.getUserId());
 		    		
-		    				// Getting the correct sinkId for each case
-		    				if(e.isScreenPublished()){
-		    					
-			    				// Setting the new screenSink value.
-			    			   	_remoteSinkId = e.getScreenSinkId();
-		    				} else{
-		    					
-			    				// Setting the new remoteVideoSink value.
-			    			   	_remoteSinkId = e.getVideoSinkId();
-		    				}
+		    				// Getting the videoId.
+		    		        if(e.isVideoPublished()) {
+		    		            _currentRemoteSinkId = e.getVideoSinkId();
+		    		            _remoteVideoSinkId = _currentRemoteSinkId;
+		    		            _videoFeed = true;
+		    		        }
+		    		        
+		    		        // Getting the screenId. Giving priority to the
+		    		        // screen feed if both are available.
+		    		        if(e.isScreenPublished()) {
+		    		            _currentRemoteSinkId = e.getScreenSinkId();
+		    		            _remoteScreenSinkId = _currentRemoteSinkId;
+		    		            _videoFeed = false;
+		    		        }
+		    		        
+		    		        // Showing the toggle button
+		    		        if(e.isScreenPublished() && e.isVideoPublished()) {
+		    		            _toggle.setVisibility(View.VISIBLE);
+		    		        }
 		    			   	
 		    			   	// Stopping the previous VideoView if any.
 		    			    _view.stop();
 		    		
-		        			// Setting the remoteVideoSink to the VideoView
-		    			    _view.setSinkId(_remoteSinkId);
+		        			// Setting the remoteVideoSink to the VideoView.
+		    			    _view.setSinkId(_currentRemoteSinkId);
 		    			    _view.start();
 		    		    } else {
 		    		    	
-		        			// Removing the remoteVideoSink to the VideoView
+		        			// Removing the remoteVideoSink to the VideoView.
 		    		    	_view.stop();
 		    			    _view.setSinkId("");
 		    		    }
@@ -576,6 +673,32 @@ public class Tutorial6 extends Activity {
 	* Private helpers
 	*===========================================================================
 	*/
+	
+	// Toggle feed from video to screen.
+	private void onRemoteStoppedVideo() {
+
+        // Updating current Id.
+        _currentRemoteSinkId = _remoteScreenSinkId;
+        
+    	// Setting the remoteVideoSink to the VideoView.
+		_view.stop();
+		_view.setSinkId(_currentRemoteSinkId);
+	    _view.start();
+	    _videoFeed = false;
+	}
+
+	// Toggle feed from screen to video.
+	private void onRemoteStoppedScreen() {
+    	
+        // Updating current Id.
+        _currentRemoteSinkId = _remoteVideoSinkId;
+        
+    	// Setting the remoteVideoSink to the VideoView.
+		_view.stop();
+		_view.setSinkId(_currentRemoteSinkId);
+	    _view.start();
+	    _videoFeed = true;
+	}
 
 	// Generates the ConnectionDescriptor (authentication + video description)
 	private ConnectionDescriptor genConnDescriptor() {

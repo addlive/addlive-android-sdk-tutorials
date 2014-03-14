@@ -57,7 +57,7 @@ public final class R {
         public static final int copyright=0x7f050002;
         public static final int desc_tutorial5=0x7f05000c;
         public static final int desc_tutorial6=0x7f05000e;
-        public static final int desc_tutorial7=0x7f050010;
+        public static final int desc_tutorial7=0x7f050011;
         public static final int disconnect=0x7f050009;
         public static final int scope_id=0x7f050001;
         public static final int sdk_version_label=0x7f050004;
@@ -67,8 +67,9 @@ public final class R {
         public static final int title_tutorial4=0x7f05000a;
         public static final int title_tutorial5=0x7f05000b;
         public static final int title_tutorial6=0x7f05000d;
-        public static final int title_tutorial7=0x7f05000f;
+        public static final int title_tutorial7=0x7f050010;
         public static final int toggle=0x7f050006;
+        public static final int toggleScreen=0x7f05000f;
     }
     public static final class style {
         /** 
