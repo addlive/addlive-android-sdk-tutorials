@@ -54,6 +54,13 @@ The sample application enable the Speech Activity with monitorSpeechActivity and
 implements the listener onSpeechActivity which receives the user id and activity
 of each user in the session.
 
+## Tutorial 4.1 - Two remote renders at the same time
+
+This tutorial covers the new speech activity feature rendering two users.
+
+The sample application will you the basics of rendering two remote feeds at the
+same time along with the speech activity feature.
+
 ## Tutorial 5 - Conference App
 
 This tutorial covers implementation of more advanced video conferencing
