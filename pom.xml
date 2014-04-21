@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.addlive</groupId>
+  <artifactId>android-sample-app</artifactId>
+  <packaging>apk</packaging>
+  <name>AddLive SDK Tutorials</name>
+
+
+  <properties>
+    <addlive.version>3.0.0.33</addlive.version>
+    <api.level>15</api.level>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <version>0.0.0.0</version>
+
+  <description>Tutorials for the AddLive Android SDK</description>
+
+  <build>
+    <finalName>addlive-sample</finalName>
+    <sourceDirectory>src</sourceDirectory>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>com.jayway.maven.plugins.android.generation2
+        </groupId>
+        <artifactId>android-maven-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <sdk>
+            <platform>${api.level}</platform>
+          </sdk>
+          <undeployBeforeDeploy>true</undeployBeforeDeploy>
+        </configuration>
+        <extensions>true</extensions>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <dependencies>
+
+    <!-- Android SDK -->
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android</artifactId>
+      <version>2.3.3</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>android-test</artifactId>
+      <version>2.3.3</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.addlive</groupId>
+      <artifactId>android-sdk</artifactId>
+      <version>${addlive.version}</version>
+    </dependency>
+
+    <!-- Native extensions -->
+
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>addlive-maven-repo</id>
+      <name>Stable Repository</name>
+      <url>http://api.addlive.com/maven</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+</project>

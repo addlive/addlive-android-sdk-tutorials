@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">AddLive SDK Tutorials</string>
+  	<string name="scope_id">MOmJ</string>
+  	<string name="copyright">© AddLive 2013</string>
+    
+  	<string name="title_tutorial1">Tutorial 1 - Platform initialization</string>
+  	<string name="sdk_version_label">SDK Version:</string>
+  	
+  	<string name="title_tutorial2">Tutorial 2 - Local video</string>
+  	<string name="toggle">Toggle video</string>
+  	
+  	<string name="title_tutorial3">Tutorial 3 - Basic connectivity</string>
+  	<string name="connect">Connect</string>
+  	<string name="disconnect">Disconnect</string>
+  	
+  	<string name="title_tutorial4">Tutorial 4 - Speakers activity</string>
+  	
+  	<string name="title_tutorial4_1">Tutorial 4.1</string>
+  	<string name="desc_tutorial4_1">Two remote renders at the same time</string>
+  	
+  	<string name="title_tutorial5">Tutorial 5</string>
+  	<string name="desc_tutorial5">Multiparty chat, single video. 
+  	    reception manually driven</string>
+  	
+  	<string name="title_tutorial6">Tutorial 6</string>
+  	<string name="desc_tutorial6">One on one chat and screen sharing.</string>
+  	<string name="toggleScreen">Toggle Video/Screen</string>
+  	
+  	<string name="title_tutorial7">Tutorial 7</string>
+  	<string name="desc_tutorial7">Multiparty session, single video reception, 
+  	    speechMonitoring to control allowed sender.</string>
+
+</resources>

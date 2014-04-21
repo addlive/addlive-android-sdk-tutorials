@@ -1,0 +1,67 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    tools:context=".Tutorial2" >
+
+	<TextView
+		android:id="@+id/appName"
+		android:layout_marginTop="20dp"
+		android:textStyle="bold"
+      	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+      	android:textColor="#000000"
+      	android:textSize="17sp"
+      	android:layout_centerHorizontal="true"
+     	android:text="@string/app_name" /> 
+
+	<TextView
+		android:id="@+id/title"
+		android:layout_marginTop="10dp"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:textColor="#000000"
+     	android:textSize="15sp"
+      	android:layout_centerHorizontal="true"
+      	android:layout_below="@+id/appName"
+      	android:text="@string/title_tutorial2" />
+
+	<SurfaceView 
+	    android:id="@+id/local_video"
+		android:layout_width="240dip"
+		android:layout_height="320dip"
+    	android:layout_centerInParent="true" />
+
+	<Button
+		android:id="@+id/toggle"
+		android:text="@string/toggle"
+		android:layout_marginTop="10dp"
+		android:textColor="#000000"
+		android:textSize="15sp"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:layout_below="@+id/local_video"
+		android:layout_centerHorizontal="true" />
+
+	<TextView
+		android:id="@+id/error"
+		android:layout_marginTop="40dp"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:textSize="17sp"
+      	android:layout_centerHorizontal="true"
+      	android:layout_below="@+id/local_video" />
+
+	<TextView
+	    android:layout_alignParentBottom="true"
+	    android:layout_alignParentLeft="true"
+		android:layout_marginLeft="10dp"
+		android:layout_marginBottom="10dp"
+      	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+      	android:textColor="#000000"
+      	android:textSize="17sp"
+     	android:text="@string/copyright" /> 
+
+</RelativeLayout>
